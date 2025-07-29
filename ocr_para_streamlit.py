@@ -1,12 +1,10 @@
 import streamlit as st
-import requests
 from PIL import Image
 import io
+import easyocr
 
-st.set_page_config(page_title="OCR com API", layout="centered")
-st.title("🖼️ OCR JPEG usando API (OCR.Space)")
-
-API_KEY = "K84757145188957"  # Substitua por sua chave real
+st.set_page_config(page_title="OCR com EasyOCR", layout="centered")
+st.title("🖼️ OCR JPEG usando EasyOCR (local)")
 
 uploaded_file = st.file_uploader("Upload de Arquivos", type=["jpeg", "jpg", "png"])
 
@@ -21,35 +19,34 @@ if uploaded_file:
 
     st.image(image, caption='Imagem carregada', use_container_width=True)
 
-    # Converter imagem para bytes
-    img_bytes = io.BytesIO()
-    image.save(img_bytes, format="JPEG")
-    img_bytes.seek(0)
+    # Converter imagem para formato aceito pelo EasyOCR (numpy array)
+    import numpy as np
+    img_np = np.array(image)
 
     with st.spinner("🔍 Realizando OCR na imagem..."):
         try:
-            response = requests.post(
-                "https://api.ocr.space/parse/image",
-                files={"filename": img_bytes},
-                data={"apikey": API_KEY, "language": "por"},
-                timeout=30  # segurança contra travamentos
-            )
-            result = response.json()
+            # Inicializar leitor EasyOCR para português
+            reader = easyocr.Reader(['pt'], gpu=False)  # gpu=True se você quiser usar GPU
 
-            if result.get("IsErroredOnProcessing"):
-                st.error("❌ Erro ao processar imagem: " + result.get("ErrorMessage", ["Erro desconhecido"])[0])
+            # Realizar leitura OCR
+            results = reader.readtext(img_np, detail=0, paragraph=True)
+
+            # results é uma lista de strings (textos detectados)
+            parsed_text = "\n".join(results).strip()
+
+            if not parsed_text:
+                st.warning("Nenhum texto detectado.")
             else:
-                parsed_text = result["ParsedResults"][0]["ParsedText"]
                 st.subheader("📑 Texto Detectado:")
-                st.code(parsed_text.strip() or "Nenhum texto detectado.")
+                st.code(parsed_text)
 
                 # Simulação da porcentagem de leitura
-                palavras = parsed_text.strip().split()
+                palavras = parsed_text.split()
                 percentual = min(100, len(palavras) * 5)  # Estimativa baseada em quantidade de palavras
                 st.subheader("📊 Porcentagem Estimada de Leitura")
                 st.progress(percentual / 100)
                 st.write(f"Leitura estimada: **{percentual:.2f}%**")
 
         except Exception as e:
-            st.error("⚠️ Erro na conexão com a API. Verifique a chave ou tente novamente.")
+            st.error("⚠️ Erro ao realizar OCR localmente.")
             st.text(f"Detalhes técnicos: {str(e)}")
