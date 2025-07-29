@@ -1,8 +1,5 @@
 streamlit
-numpy
 pillow
-opencv-python-headless==4.7.0.72
-torch==2.0.1+cpu
-torchvision==0.15.2+cpu
-torchaudio==2.0.2+cpu
--e git+https://github.com/JaidedAI/EasyOCR.git@master#egg=easyocr
+numpy
+pytesseract
+
