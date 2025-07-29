@@ -8,41 +8,45 @@ Original file is located at
 """
 
 import streamlit as st
+import requests
 from PIL import Image
-import pytesseract
-import numpy as np
 import io
 
-st.set_page_config(page_title="OCR com JPEG", layout="centered")
+st.set_page_config(page_title="OCR com API", layout="centered")
+st.title("🖼️ OCR JPEG usando API (OCR.Space)")
 
-st.title("🖼️ OCR com Imagens JPEG")
-st.write("Faça o upload de uma imagem `.jpeg` para realizar a leitura de texto (OCR).")
+API_KEY = "K88173315088957"  # Substitua por sua chave pessoal para uso real
 
-uploaded_file = st.file_uploader("Upload de Arquivos", type=["jpeg", "jpg"])
+uploaded_file = st.file_uploader("Upload de Arquivos", type=["jpeg", "jpg", "png"])
 
 if uploaded_file:
-    # Mostrar imagem
     image = Image.open(uploaded_file)
-    st.image(image, caption='Imagem carregada', use_column_width=True)
+    st.image(image, caption='Imagem carregada', use_container_width=True)
 
-    # Realiza OCR
-    st.subheader("📑 Texto Detectado (OCR)")
-    text = pytesseract.image_to_string(image, lang='por')
-    st.code(text if text.strip() else "Nenhum texto detectado.")
+    # Converter imagem para bytes
+    img_bytes = io.BytesIO()
+    image.save(img_bytes, format="JPEG")
+    img_bytes.seek(0)
 
-    # Estimar porcentagem de leitura
-    st.subheader("📊 Porcentagem de Leitura")
+    with st.spinner("🔍 Realizando OCR na imagem..."):
+        response = requests.post(
+            "https://api.ocr.space/parse/image",
+            files={"filename": img_bytes},
+            data={"apikey": API_KEY, "language": "por"},
+        )
 
-    # Cria máscara da imagem com as caixas detectadas
-    data = pytesseract.image_to_data(image, lang='por', output_type=pytesseract.Output.DICT)
+    result = response.json()
 
-    total_boxes = len(data['text'])
-    text_boxes = sum(1 for word in data['text'] if word.strip() != '')
-
-    if total_boxes > 0:
-        percent = (text_boxes / total_boxes) * 100
+    if result.get("IsErroredOnProcessing"):
+        st.error("Erro ao processar imagem. Verifique a chave ou tente outra imagem.")
     else:
-        percent = 0.0
+        parsed_text = result["ParsedResults"][0]["ParsedText"]
+        st.subheader("📑 Texto Detectado:")
+        st.code(parsed_text.strip() or "Nenhum texto detectado.")
 
-    st.progress(percent / 100)
-    st.write(f"Percentual estimado de leitura: **{percent:.2f}%**")
+        # Simulação simples da "porcentagem de leitura"
+        palavras = parsed_text.strip().split()
+        percentual = min(100, len(palavras) * 5)  # Simples estimativa baseada em nº de palavras
+        st.subheader("📊 Porcentagem Estimada de Leitura")
+        st.progress(percentual / 100)
+        st.write(f"Leitura estimada: **{percentual:.2f}%**")
