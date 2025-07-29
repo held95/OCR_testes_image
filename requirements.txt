@@ -1,15 +1,6 @@
-streamlit==1.35.0
-numpy==1.24.4
-pillow==10.2.0
-opencv-python-headless==4.7.0.72
-
-# Instala Torch com CPU compatível com ambientes sem GPU
-torch==2.0.1+cpu
-torchvision==0.15.2+cpu
-torchaudio==2.0.2+cpu
-https://download.pytorch.org/whl/cpu/torch-2.0.1%2Bcpu-cp310-cp310-linux_x86_64.whl
-https://download.pytorch.org/whl/cpu/torchvision-0.15.2%2Bcpu-cp310-cp310-linux_x86_64.whl
-https://download.pytorch.org/whl/cpu/torchaudio-2.0.2%2Bcpu-cp310-cp310-linux_x86_64.whl
-
-# EasyOCR via GitHub (melhor que PyPI no Streamlit Cloud)
--e git+https://github.com/JaidedAI/EasyOCR.git@master#egg=easyocr
+streamlit
+torch
+easyocr
+pillow
+numpy
+opencv-python-headless
