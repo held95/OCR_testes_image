@@ -6,7 +6,7 @@ import io
 st.set_page_config(page_title="OCR com API", layout="centered")
 st.title("🖼️ OCR JPEG usando API (OCR.Space)")
 
-API_KEY = "K88173315088957"  # Substitua por sua chave real
+API_KEY = "K84757145188957"  # Substitua por sua chave real
 
 uploaded_file = st.file_uploader("Upload de Arquivos", type=["jpeg", "jpg", "png"])
 
